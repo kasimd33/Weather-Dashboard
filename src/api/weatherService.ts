@@ -97,6 +97,38 @@ export const weatherService = {
     return data
   },
 
+  async reverseGeocode(lat: number, lon: number): Promise<GeoLocation> {
+    try {
+      const { data } = await axios.get<{
+        city?: string
+        locality?: string
+        principalSubdivision?: string
+        countryName?: string
+        countryCode?: string
+      }>('https://api.bigdatacloud.net/data/reverse-geocode-client', {
+        params: { latitude: lat, longitude: lon },
+      })
+      const name = data.city || data.locality || data.principalSubdivision || 'Your Location'
+      const country = data.countryCode || data.countryName || 'Unknown'
+      return {
+        id: 0,
+        name,
+        latitude: lat,
+        longitude: lon,
+        country,
+        admin1: data.principalSubdivision,
+      }
+    } catch {
+      return {
+        id: 0,
+        name: 'Your Location',
+        latitude: lat,
+        longitude: lon,
+        country: 'Unknown',
+      }
+    }
+  },
+
   async getAirQuality(lat: number, lon: number): Promise<AirQualityResponse> {
     try {
       const { data } = await axios.get<AirQualityResponse>(`${AIR_QUALITY_BASE}/air-quality`, {
